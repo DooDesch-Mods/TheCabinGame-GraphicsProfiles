@@ -1,0 +1,3 @@
+[list]
+[*]Offers explicit Balanced and Performance profiles for GI, shadows, reflections and effects, plus Restore previous. Other graphics options stay unchanged.
+[/list]

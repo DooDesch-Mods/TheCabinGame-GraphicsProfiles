@@ -1,0 +1,15 @@
+{
+  "Balanced": {
+    "sg.GlobalIlluminationQuality": 1,
+    "sg.ShadowQuality": 1,
+    "sg.ReflectionQuality": 1,
+    "sg.EffectsQuality": 1
+  },
+  "Performance": {
+    "sg.GlobalIlluminationQuality": 0,
+    "sg.ShadowQuality": 0,
+    "sg.ReflectionQuality": 0,
+    "sg.EffectsQuality": 0
+  },
+  "apply_automatically": false
+}
