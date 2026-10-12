@@ -88,10 +88,11 @@ function adapter:write(target)
 end
 function mod:apply(values,action)
     assert(action=="" or action=="restore","invalid graphics action")
-    storage.validate(self.definition.fields,values)
+    values = storage.validate(self.definition.fields,values)
     local selected = action=="restore" and "restore" or values.profile
     if selected=="current" then return self.store:save(values) end
     local before = require("transaction").apply(adapter,previous,selected)
+    if selected=="restore" then values.profile="current" end
     local ok,result,revision = pcall(self.store.save,self.store,values)
     if not ok then
         local restored,cause = pcall(adapter.write,adapter,before)
