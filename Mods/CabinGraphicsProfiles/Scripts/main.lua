@@ -45,6 +45,13 @@ local function readMap(map,key)
     assert(math.type(value)=="integer","original graphics index invalid: " .. key)
     return value
 end
+local function graphicsKey(value,label)
+    local kind=type(value)
+    assert(kind=="string" or kind=="userdata",label .. " type invalid; observed=" .. kind .. "; required=string/FString")
+    local key=kind=="string" and value or value:ToString()
+    assert(type(key)=="string",label .. " conversion invalid; observed=" .. type(key) .. "; source=" .. kind)
+    return key
+end
 local adapter = {}
 function adapter:read()
     local settings,save = engine(),game()
@@ -59,7 +66,7 @@ function adapter:write(target)
     local settings,save = engine(),game()
     local graphics = save.SavedGraphics
     local unchanged = {}
-    graphics:ForEach(function(key,value) unchanged[key:get()]=value:get() end)
+    graphics:ForEach(function(key,value) unchanged[graphicsKey(key:get(),"original graphics map key")]=value:get() end)
     for index,group in ipairs(profiles.groups) do
         local quality = assert(target[keys[index]])
         settings[group.setter](settings,quality)
@@ -96,8 +103,9 @@ local SLOT = "/Game/MenuContent/Settings/WBP_OptionsSlot_SideArrow.WBP_OptionsSl
 mod:bind(SLOT,function(context)
     local widget = context:get()
     if not runtime.valid(widget) or not runtime.valid(widget.Master) then return end
+    local title=graphicsKey(widget.Title,"original graphics option Title")
     for _,group in ipairs(profiles.groups) do
-        if widget.Title==group.key and widget.CurrentOption<0 and group.offset then
+        if title==group.key and widget.CurrentOption<0 and group.offset then
             local quality = widget.CurrentOption+group.offset
             assert(quality==0 or quality==1,"graphics menu quality index invalid")
             widget.OptionType_T:SetText(FText(quality==0 and "Low" or "Medium"))
