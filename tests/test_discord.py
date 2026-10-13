@@ -1,6 +1,7 @@
 """Check announcement boundaries without Discord credentials or publication."""
 import importlib.util
 import os
+import re
 from pathlib import Path
 import tempfile
 import unittest
@@ -91,6 +92,13 @@ class Announcement(unittest.TestCase):
 
 
 class ProductAnnouncement(unittest.TestCase):
+    def test_workflow_product_values_pass_script_guard(self):
+        workflow = (Path(__file__).resolve().parents[1] / '.github/workflows/discord.yml').read_text(encoding='utf-8')
+        values = dict(re.findall(r'^\s+(PRODUCT_[A-Z]+): (.+)$', workflow, re.M))
+        values.update(GITHUB_REPOSITORY=discord.PRODUCT['repository'], DISCORD_CHANNEL_ID=discord.CHANNEL)
+        with patch.dict(os.environ, values, clear=True):
+            discord.check_product()
+
     def setUp(self):
         self.folder = tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent)
         self.addCleanup(self.folder.cleanup)

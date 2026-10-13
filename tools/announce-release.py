@@ -80,7 +80,7 @@ def announce(webhook, expected_channel, payload, send, record):
     print(f"confirmed: Discord message {message_id} is saved in channel {expected_channel}")
     return record
 
-PRODUCT = {'repository': 'DooDesch-Mods/TheCabinGame-GraphicsProfiles', 'name': 'Cabin Graphics Profiles', 'summary': 'Adds Balanced and Performance presets for global illumination, shadows, reflections and effects, plus Restore previous.', 'support': 'https://support.doodesch.de/graphicsprofiles', 'thumbnail': 'https://raw.githubusercontent.com/DooDesch-Mods/TheCabinGame-GraphicsProfiles/main/docs/thumbnail.png'}
+PRODUCT = {'repository': 'DooDesch-Mods/TheCabinGame-GraphicsProfiles', 'name': 'Cabin Graphics Profiles', 'summary': 'Adds Balanced and Performance presets plus 26 manual graphics and display controls with Apply and Restore previous.', 'support': 'https://support.doodesch.de/graphicsprofiles', 'thumbnail': 'https://raw.githubusercontent.com/DooDesch-Mods/TheCabinGame-GraphicsProfiles/main/docs/thumbnail.png'}
 
 CHANNEL = "1534536549642014810"
 
