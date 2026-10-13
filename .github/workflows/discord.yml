@@ -36,7 +36,7 @@ jobs:
           DISCORD_RELEASE_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
           DISCORD_CHANNEL_ID: '1534536549642014810'
           PRODUCT_NAME: Cabin Graphics Profiles
-          PRODUCT_SUMMARY: Adds Balanced and Performance presets for global illumination, shadows, reflections and effects, plus Restore previous.
+          PRODUCT_SUMMARY: Adds Balanced and Performance presets plus 26 manual graphics and display controls with Apply and Restore previous.
           PRODUCT_SUPPORT: https://support.doodesch.de/graphicsprofiles
           NEXUS_MOD_URL: ${{ vars.NEXUS_MOD_URL }}
           PRODUCT_THUMBNAIL: https://raw.githubusercontent.com/DooDesch-Mods/TheCabinGame-GraphicsProfiles/main/docs/thumbnail.png

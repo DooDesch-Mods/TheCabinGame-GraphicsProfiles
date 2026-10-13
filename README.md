@@ -2,7 +2,7 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/graphicsprofiles](https://support.doodesch.de/graphicsprofiles).
 
-Offers explicit Balanced and Performance profiles for GI, shadows, reflections and effects, plus Restore previous. Other graphics options stay unchanged.
+Offers Balanced and Performance profiles for GI, shadows, reflections and effects, plus Restore previous. **Graphics Profiles - Custom** adds manual graphics and display settings, including postprocessing, view distance, motion blur, depth of field, lens flare, chromatic aberration, bloom, sharpening and fog.
 
 Requires [UE4SS 3.0.1 or later](https://www.nexusmods.com/thecabingame/mods/4). Install UE4SS separately.
 
@@ -12,7 +12,11 @@ Requires [UE4SS 3.0.1 or later](https://www.nexusmods.com/thecabingame/mods/4). 
 
 Use [Mod Settings](https://www.nexusmods.com/thecabingame/mods/6) to choose a profile or **Restore previous** from its menu. The ZIP also includes `README.profile_templates.json` for manual configuration. No profile is applied on startup.
 
-Use **Restore previous** before removal to undo a profile. Then close the game and remove only `Mods/CabinGraphicsProfiles` and its three named container files. Keep a backup of `Scripts/settings.dat` and `Scripts/previous_graphics.dat` if you want to retain the stored preferences and previous values.
+For manual settings, select **Graphics Profiles - Custom**, change the controls, then press **Apply**. **Cancel** discards pending edits. The panel reads the current game values; presets still change only their four quality groups. Custom effect overrides persist across restarts and the game's own graphics Apply. Use **Restore previous custom settings** to restore the values from before the last custom Apply, including the earlier overrides. The matching Mod Settings update is required for integer sliders.
+
+Display resolution, window mode, render scale, FPS limit, V-Sync and color blind settings use the game's saved graphics options. Particle Detail matches the original menu's saved option, which currently has no effect in the base game. The proposed `r.SpecularScale` and `r.RoughnessMode` variables are unavailable on the tested build and are not exposed as working controls.
+
+Use **Restore previous** to undo a profile or **Restore previous custom settings** to undo the last custom Apply before removal. Then close the game and remove only `Mods/CabinGraphicsProfiles` and its three named container files. Back up `Scripts/settings.dat`, `Scripts/previous_graphics.dat`, `Scripts/custom_overrides.dat` and `Scripts/previous_custom.dat` to retain stored preferences and previous values.
 
 ## Build and release
 

@@ -92,6 +92,7 @@ function mod:apply(values,action)
     local selected = action=="restore" and "restore" or values.profile
     if selected=="current" then return self.store:save(values) end
     local before = require("transaction").apply(adapter,previous,selected)
+    if mod.custom then mod.custom.reapply() end
     if selected=="restore" then values.profile="current" end
     local ok,result,revision = pcall(self.store.save,self.store,values)
     if not ok then
@@ -105,7 +106,7 @@ mod:bind(SLOT,function(context)
     local widget = context:get()
     if not runtime.valid(widget) or not runtime.valid(widget.Master) then return end
     local title=graphicsKey(widget.Title,"original graphics option Title")
-    for _,group in ipairs(profiles.groups) do
+    for _,group in ipairs(require("custom").qualities) do
         if title==group.key and widget.CurrentOption<0 and group.offset then
             local quality = widget.CurrentOption+group.offset
             assert(quality==0 or quality==1,"graphics menu quality index invalid")
@@ -115,4 +116,5 @@ mod:bind(SLOT,function(context)
         end
     end
 end)
+mod.custom=require("custom").start(mod,directory,{engine=engine,game=game,readMap=readMap,valid=runtime.valid})
 return mod

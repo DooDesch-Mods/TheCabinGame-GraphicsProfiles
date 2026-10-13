@@ -34,15 +34,17 @@ local directory=...
 local logs,shared,hooks,ticks={},{},{},{}
 local nextid,writes,saves=10,0,0
 local function copy(values) local result={};for k,v in pairs(values) do result[k]=v end;return result end
-local function object(address) return {IsValid=function() return true end,GetAddress=function() return address end} end
+local function object(address) return {IsValid=function() return true end,GetAddress=function() return address end,IsActorBeingDestroyed=function() return false end} end
 local pc=object(2)
 function pc:IsLocalController() return true end
-local qualities={gi=3,shadows=3,reflections=2,effects=4}
+local qualities={gi=3,shadows=3,reflections=2,effects=4,shading=2,foliage=2,aa=2,textures=2,postprocess=2,distance=2}
 local initialqualities=copy(qualities)
 local names={'GI Quality','Shading Quality','Foliage Quality','Anti-Aliasing','Texture Detail','Shadow Detail','Reflection Detail','Effects Detail','Particle Detail','Motion Blur','Display','Window Type','Screen Percentage','Max FPS','V-Sync','Color Blind Mode','Color Blind Intensity'}
 local live={}
 for index,name in ipairs(names) do live[name]=index end
 live['GI Quality']=2;live['Shadow Detail']=1;live['Reflection Detail']=1;live['Effects Detail']=3
+live['Shading Quality']=1;live['Foliage Quality']=1;live['Anti-Aliasing']=1;live['Texture Detail']=1;live['Particle Detail']=1
+live['Motion Blur']=1;live['Display']=6;live['Window Type']=0;live['Screen Percentage']=4;live['Max FPS']=2;live['V-Sync']=0;live['Color Blind Mode']=0;live['Color Blind Intensity']=50
 local disk,initialmap=copy(live),copy(live)
 local function wrap(value) return {get=function() return value end} end
 local keymode='userdata'
@@ -67,13 +69,28 @@ local function map(data)
 end
 local save,settings,gameplay,library=object(3),object(4),object(5),object(6)
 save.SavedGraphics=map(live)
-local qualitynames={gi='GlobalIllumination',shadows='Shadow',reflections='Reflection',effects='VisualEffect'}
+local qualitynames={gi='GlobalIllumination',shadows='Shadow',reflections='Reflection',effects='VisualEffect',shading='Shading',foliage='Foliage',aa='AntiAliasing',textures='Texture',postprocess='PostProcessing',distance='ViewDistance'}
 for key,name in pairs(qualitynames) do
     settings['Get'..name..'Quality']=function() return qualities[key] end
     settings['Set'..name..'Quality']=function(_,value) writes=writes+1;qualities[key]=value end
 end
 function settings:ApplyNonResolutionSettings() end
 function settings:SaveSettings() end
+local cvars={['r.MotionBlurQuality']=4,['r.ScreenPercentage']=90,['t.MaxFPS']=90,['r.DepthOfFieldQuality']=2,['r.LensFlareQuality']=2,['r.SceneColorFringeQuality']=1,['r.BloomQuality']=5,['r.Tonemapper.Sharpen']=-1,['r.Fog']=1,['r.VolumetricFog']=1}
+local initialcvars=copy(cvars)
+local kismet=object(20)
+function kismet:GetConsoleVariableStringValue(name) return cvars[name] and tostring(cvars[name]) or '' end
+function kismet:ExecuteConsoleCommand(pc,command,owner) local name,value=command:match('^(%S+) (.+)$');assert(cvars[name]~=nil);cvars[name]=assert(tonumber(value)) end
+local screen={X=1600,Y=900};local window,vsync=2,true
+function settings:GetScreenResolution() return copy(screen) end
+function settings:SetScreenResolution(value) screen=copy(value) end
+function settings:GetFullscreenMode() return window end
+function settings:SetFullscreenMode(value) window=value end
+function settings:IsVSyncEnabled() return vsync end
+function settings:SetVSyncEnabled(value) vsync=value end
+function settings:ApplyResolutionSettings(value) assert(value==false) end
+local widgets=object(21)
+function widgets:SetColorVisionDeficiencyType(mode,intensity,correct,show) assert(mode>=0 and mode<=3 and intensity>=0 and intensity<=1 and not correct and not show) end
 function gameplay:SaveGameToSlot(value,slot,index) assert(value==save and slot=='SettingsData' and index==0);saves=saves+1;disk=copy(live);return true end
 function gameplay:LoadGameFromSlot(slot,index) assert(slot=='SettingsData' and index==0);local result=object(7);result.SavedGraphics=map(disk);return result end
 function library:GetSettingsSaveData(owner,slot,out) assert(owner==pc);out.SettingsSaveObject=save end
@@ -87,6 +104,8 @@ local function environment()
     env.StaticFindObject=function(path)
         if path=='/Script/Engine.Default__GameUserSettings' then return {GetGameUserSettings=function() return settings end} end
         if path=='/Script/Engine.Default__GameplayStatics' then return gameplay end
+        if path=='/Script/Engine.Default__KismetSystemLibrary' then return kismet end
+        if path=='/Script/UMG.Default__WidgetBlueprintLibrary' then return widgets end
         if path=='/Game/CabinGameContent/Cabin_Functions.Default__Cabin_Functions_C' then return library end
         return object(100)
     end
@@ -109,13 +128,25 @@ local registry=clientenv.require('cabin_registry').new(transport,function(level,
 local codec=clientenv.require('cabin_codec')
 local id='cabin_graphics_profiles'
 local function request(profile,action,token)
-    local entries=registry:list();assert(#entries==1 and entries[1].definition.id==id)
-    local registered=entries[1];local values=codec.copy(registered.values);values.profile=profile
+    local entries=registry:list();local registered
+    for _,entry in ipairs(entries) do if entry.definition.id==id then registered=entry end end
+    assert(registered);local values=codec.copy(registered.values);values.profile=profile
     registry:request(id,token,registered.revision,values,action)
     assert(not registry:response(id,token),'effect unexpectedly occurred before owning VM tick')
     owner:tick()
     local response=assert(registry:response(id,token),'owning VM acknowledgement absent')
     return response
+end
+local function custom(changes,action,token)
+    owner:tick()
+    local registered
+    for _,entry in ipairs(registry:list()) do if entry.definition.id=='cabin_graphics_custom' then registered=entry end end
+    assert(registered,'custom provider absent')
+    local values=codec.copy(registered.values)
+    for key,value in pairs(changes) do values[key]=value end
+    registry:request('cabin_graphics_custom',token,registered.revision,values,action or '')
+    owner:tick()
+    return assert(registry:response('cabin_graphics_custom',token))
 end
 local function title(title,index)
     owner:tick()
@@ -130,7 +161,8 @@ local function title(title,index)
 end
 return {request=request,title=title,live=live,initialmap=initialmap,qualities=qualities,initialqualities=initialqualities,
     disk=function() return disk end,writes=function() return writes end,saves=function() return saves end,
-    keymode=function(mode) keymode=mode end}
+    keymode=function(mode) keymode=mode end,custom=custom,cvars=cvars,initialcvars=initialcvars,owner=owner,logs=logs,
+    settings=settings,registry=registry}
 '''
 
 
@@ -184,7 +216,8 @@ class TypedGraphicsTests(unittest.TestCase):
             self.assertEqual(widget.text, expected)
             self.assertEqual(widget.left, left)
             self.assertTrue(widget.right)
-        self.assertIsNone(fx.title("Texture Detail", -1).text)
+        self.assertEqual(fx.title("Texture Detail", -1).text, "Low")
+        self.assertIsNone(fx.title("Particle Detail", -1).text)
         self.assertIsNone(fx.title("Shadow Detail", 0).text)
         self.assertEqual(fx.writes(), 0)
         self.assertEqual(fx.saves(), 0)
@@ -201,6 +234,52 @@ class TypedGraphicsTests(unittest.TestCase):
     def test_lua_string_key_compatibility(self):
         self.fixture.keymode("string")
         self.apply_restore()
+
+    def test_custom_changes_native_groups_effects_and_saved_values_then_restores(self):
+        fx = self.fixture
+        changes = self.vm.table_from({'gi': 1, 'textures': 0, 'postprocess': 0, 'motion': False,
+                                      'screen': 70, 'fps': 60, 'vsync': False, 'color': 2,
+                                      'intensity': 75, 'bloom': 1, 'sharpen': 0.5})
+        result = fx.custom(changes, '', 'custom-apply')
+        self.assertTrue(result.ok, result.error)
+        self.assertEqual(fx.qualities.gi, 1)
+        self.assertEqual(fx.qualities.textures, 0)
+        self.assertEqual(fx.qualities.postprocess, 0)
+        self.assertEqual(fx.live['GI Quality'], 1)
+        self.assertEqual(fx.live['Texture Detail'], -1)
+        self.assertEqual(fx.live['Screen Percentage'], 2)
+        self.assertEqual(fx.live['Max FPS'], 1)
+        self.assertEqual(fx.cvars['r.MotionBlurQuality'], 0)
+        self.assertEqual(fx.cvars['r.BloomQuality'], 1)
+        self.assertEqual(fx.cvars['r.Tonemapper.Sharpen'], 0.5)
+        self.assertEqual(fx.disk()['Color Blind Mode'], 2)
+        result = fx.custom(self.vm.table(), 'restore', 'custom-restore')
+        self.assertTrue(result.ok, result.error)
+        self.assertEqual(dict(fx.live.items()), dict(fx.initialmap.items()))
+        self.assertEqual(dict(fx.qualities.items()), dict(fx.initialqualities.items()))
+        self.assertEqual(dict(fx.cvars.items()), dict(fx.initialcvars.items()))
+        self.assertFalse(fx.owner.custom.overrides['values'].bloom_active)
+
+    def test_custom_validation_rejects_bad_values_before_native_mutation(self):
+        fx = self.fixture
+        result = fx.custom(self.vm.table_from({'bloom': 99}), '', 'custom-invalid')
+        self.assertFalse(result.ok)
+        self.assertIn('Bloom is outside its allowed range', result.error)
+        self.assertEqual(fx.writes(), 0)
+        self.assertEqual(fx.saves(), 0)
+
+    def test_custom_window_resolution_restore_keeps_native_and_original_indices(self):
+        fx = self.fixture
+        result = fx.custom(self.vm.table_from({'resolution': 0, 'window': 1}), '', 'custom-display')
+        self.assertTrue(result.ok, result.error)
+        self.assertEqual(fx.settings.GetScreenResolution(fx.settings).X, 1280)
+        self.assertEqual(fx.live['Display'], 0)
+        self.assertEqual(fx.live['Window Type'], 1)
+        result = fx.custom(self.vm.table(), 'restore', 'custom-display-restore')
+        self.assertTrue(result.ok, result.error)
+        self.assertEqual(fx.settings.GetScreenResolution(fx.settings).X, 1600)
+        self.assertEqual(fx.settings.GetFullscreenMode(fx.settings), 2)
+        self.assertEqual(dict(fx.live.items()), dict(fx.initialmap.items()))
 
 
 # check_lua.py executes this file through runpy as well as direct CI invocation.
