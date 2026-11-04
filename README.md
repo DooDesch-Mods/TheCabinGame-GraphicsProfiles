@@ -2,6 +2,8 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/graphicsprofiles](https://support.doodesch.de/graphicsprofiles).
 
+[![Discord](https://mods.doodesch.de/img/badge.svg)](https://mods.doodesch.de)
+
 Offers Balanced and Performance profiles for GI, shadows, reflections and effects, plus Restore previous. **Graphics Profiles - Custom** adds manual graphics and display settings, including postprocessing, view distance, motion blur, depth of field, lens flare, chromatic aberration, bloom, sharpening and fog.
 
 Requires [UE4SS 3.0.1 or later](https://www.nexusmods.com/thecabingame/mods/4). Install UE4SS separately.
@@ -27,3 +29,9 @@ Use Python 3.13. Run `python -m pip install -r requirements-dev.txt`, `python -m
 The builder writes a deterministic ZIP and checksum in `dist`. Overlay containers are committed build inputs; CI packages them and does not cook Unreal assets or download the game. Runtime Lua and containers are covered by the acceptance fingerprint. `python tools/package.py --release` rejects a missing or stale product acceptance. Multiplayer and a separate isolated gameplay session are explicitly not applicable to this local graphics provider.
 
 CI checks Linux and Windows. See [publishing](docs/publishing.md) for the GitHub/Nexus flow and [Nexus description](docs/nexus.md) for the prepared listing.
+
+## Community
+
+[![DooDesch Mods on Discord](https://mods.doodesch.de/img/card.svg)](https://mods.doodesch.de)
+
+Join the DooDesch Mods Discord: update pings, polls on what comes next, and playtests of new mods.
