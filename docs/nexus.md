@@ -2,6 +2,8 @@
 
 > 🛟 **Need help or found a bug?** Get support at [support.doodesch.de/graphicsprofiles](https://support.doodesch.de/graphicsprofiles).
 
+[![Discord](https://mods.doodesch.de/img/badge.png)](https://mods.doodesch.de)
+
 Offers Balanced and Performance profiles for GI, shadows, reflections and effects, plus Restore previous. **Graphics Profiles - Custom** adds manual graphics and display settings, including postprocessing, view distance, motion blur, depth of field, lens flare, chromatic aberration, bloom, sharpening and fog.
 
 Requires [UE4SS 3.0.1 or later](https://www.nexusmods.com/thecabingame/mods/4). Install UE4SS separately.
@@ -17,3 +19,9 @@ For manual settings, select **Graphics Profiles - Custom**, change the controls,
 Display resolution, window mode, render scale, FPS limit, V-Sync and color blind settings use the game's saved graphics options. Particle Detail matches the original menu's saved option, which currently has no effect in the base game. The proposed `r.SpecularScale` and `r.RoughnessMode` variables are unavailable on the tested build and are not exposed as working controls.
 
 Use **Restore previous** to undo a profile or **Restore previous custom settings** to undo the last custom Apply before removal. Then close the game and remove only `Mods/CabinGraphicsProfiles` and its three named container files. Back up `Scripts/settings.dat`, `Scripts/previous_graphics.dat`, `Scripts/custom_overrides.dat` and `Scripts/previous_custom.dat` to retain stored preferences and previous values.
+
+## Community
+
+[![DooDesch Mods on Discord](https://mods.doodesch.de/img/card.png)](https://mods.doodesch.de)
+
+Join the DooDesch Mods Discord: update pings, polls on what comes next, and playtests of new mods.
